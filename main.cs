@@ -8,6 +8,26 @@ namespace ConsoleApplication4
 { 
     static class Program
     {
+		static IEnumerable<T> MergePreserveOrder4OP<T, TOrder>(this IEnumerable<IEnumerable<T>> aa, Func<T, TOrder> orderFunc) where TOrder : IComparable<TOrder>
+        {
+            var items = aa.Select(xx => xx.GetEnumerator()).Where(ee => ee.MoveNext()).OrderBy(ee => ee.Current).ToList();
+
+            while (items.Count > 0)
+            {
+                yield return items[0].Current;
+
+                var head = items[0];
+                items.RemoveAt(0);
+                if (head.MoveNext())
+                { 
+                    var finalPosition = 0;
+                    while (orderFunc(head.Current).CompareTo(orderFunc(items[finalPosition].Current)) > 0 && items.Count-1 > finalPosition++) ;
+                    items.Insert(finalPosition, head);
+                }
+            }
+        }
+
+		
         static IEnumerable<T> MergePreserveOrder4<T, TOrder>(this IEnumerable<IEnumerable<T>> aa, Func<T, TOrder> orderFunc) where TOrder : IComparable<TOrder>
         {
             var items = aa.Select(xx => xx.GetEnumerator())
@@ -57,3 +77,6 @@ namespace ConsoleApplication4
         }
     }
 }
+
+
+
